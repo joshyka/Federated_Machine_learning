@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-
 # In[1]:
 
+
+import sys
 import numpy
 from random import sample
+import os;
 import warnings
 warnings.filterwarnings("ignore")
 import numpy as np
@@ -14,6 +16,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
+
+
 
 # In[2]: 
 
@@ -39,6 +43,7 @@ def load_data():
     yscale=scaler_y.transform(y)
     
     X_train, X_test, y_train, y_test = train_test_split(xscale, yscale)
+
     return X_train, y_train, X_test, y_test
 
 # In[3]:
@@ -51,6 +56,7 @@ def partition_data(trainX, trainY, num):
     for i in range(0,num):
         partitionedX.append(trainX[ran_order[i*local_size:(i+1)*local_size]])
         partitionedY.append(trainY[ran_order[i*local_size:(i+1)*local_size]])
+
     return numpy.array(partitionedX), numpy.array(partitionedY)
 
 
@@ -73,7 +79,8 @@ def define_model():
         model.add(Dense(64, activation='relu'))
         model.add(Dense(64, activation='relu'))
         model.add(Dense(1, activation='linear'))
-        model.compile(loss='mse', optimizer='adam', metrics=['mse','mae'])
+        model.compile(loss='mse', optimizer='adam', metrics=['mae'])
+
         return model
 
 
@@ -99,12 +106,15 @@ def fed_learn():
         for client in range(0, num_clients):
             local_model = define_model()
             local_model.set_weights(global_weights)
-            local_model.fit(X[client], Y[client], epochs=num_epoch, batch_size=bs, verbose=1, validation_split=0.2)
+            local_model.fit(X[client], Y[client], epochs=num_epoch, batch_size=bs, verbose=1)
+            _, local_mae = local_model.evaluate(X[client], Y[client], verbose=1)
+            print("local_mae: %.2f"%(local_mae))
             local_weights_list.append(local_model.get_weights())
 
         global_weights = numpy.mean(local_weights_list, axis=0)
         global_model.set_weights(global_weights)
-        _, _, accuracy = global_model.evaluate(testX, testY, verbose=0)
-        print("Global model accuracy: %.2f" % (accuracy * 100))
+        _, mae = global_model.evaluate(testX, testY, verbose=1)
+        print("Global model mae: %.2f" % (mae))
 
 fed_learn()
+
