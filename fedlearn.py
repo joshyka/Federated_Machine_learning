@@ -1,56 +1,24 @@
 # -*- coding: utf-8 -*-
+
 # In[1]:
 
-
-import sys
-import warnings
-warnings.simplefilter(action='ignore')
-
-from keras.datasets import fashion_mnist
 import numpy
-from keras.utils import to_categorical
 from random import sample
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.optimizers import SGD
-import os;
-
 import warnings
 warnings.filterwarnings("ignore")
-import seaborn as sns
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import keras
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
-from tensorflow.python.keras.wrappers.scikit_learn import KerasRegressor
 
-
-# In[2]: Loading the dataset and Normalizing
-
-#def normalize(data):
-#    data_norm = data.astype('float32')
-#    data_norm = data_norm/255.0
-#    return data_norm
+# In[2]: 
 
 def load_data():
-    #(trainX, trainY), (testX, testY) = fashion_mnist.load_data()
-
-    #trainX = trainX.reshape((trainX.shape[0], 28*28))
-    #testX = testX.reshape((testX.shape[0], 28*28))
-
-    #trainY = to_categorical(trainY)
-    #testY = to_categorical(testY)
-
-    #trainX, testX = normalize(trainX), normalize(testX)
-        
+   
     data = pd.read_csv(r"C:\Users\JOSH\Downloads\weatherHistory.csv", header=None)
     new_header = data.iloc[0]
     data = data[1:]
@@ -71,7 +39,6 @@ def load_data():
     yscale=scaler_y.transform(y)
     
     X_train, X_test, y_train, y_test = train_test_split(xscale, yscale)
-
     return X_train, y_train, X_test, y_test
 
 # In[3]:
@@ -84,9 +51,7 @@ def partition_data(trainX, trainY, num):
     for i in range(0,num):
         partitionedX.append(trainX[ran_order[i*local_size:(i+1)*local_size]])
         partitionedY.append(trainY[ran_order[i*local_size:(i+1)*local_size]])
-
     return numpy.array(partitionedX), numpy.array(partitionedY)
-
 
 
 # In[4]:
@@ -108,17 +73,11 @@ def define_model():
         model.add(Dense(64, activation='relu'))
         model.add(Dense(64, activation='relu'))
         model.add(Dense(1, activation='linear'))
-
-        #opt = SGD(lr = 0.01, momentum = 0.9)
-        #model.compile(optimizer = opt, loss = 'categorical_crossentropy', metrics = ['accuracy'])
         model.compile(loss='mse', optimizer='adam', metrics=['mse','mae'])
-
         return model
 
 
 # In[6]:
-
-
 
 def fed_learn():
     num_clients = 5
@@ -138,26 +97,14 @@ def fed_learn():
         local_weights_list = list()
 
         for client in range(0, num_clients):
-            ##print("For client ", client)
             local_model = define_model()
             local_model.set_weights(global_weights)
-            
-            #local_model.fit(X_train, y_train, epochs=100, batch_size=50,  verbose=1, validation_split=0.2)
-
             local_model.fit(X[client], Y[client], epochs=num_epoch, batch_size=bs, verbose=1, validation_split=0.2)
-            ##_, accuracy = local_model.evaluate(X[client], Y[client], verbose=0)
-            ##print("Accuracy: %.2f"%(accuracy*100))
-
             local_weights_list.append(local_model.get_weights())
 
         global_weights = numpy.mean(local_weights_list, axis=0)
         global_model.set_weights(global_weights)
-        _, accuracy = global_model.evaluate(testX, testY, verbose=0)
+        _, _, accuracy = global_model.evaluate(testX, testY, verbose=0)
         print("Global model accuracy: %.2f" % (accuracy * 100))
 
 fed_learn()
-
-
-# In[7]:
-
-
