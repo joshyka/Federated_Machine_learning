@@ -36,6 +36,7 @@ q_aware_model.save('Intel_quantize_aware_model.h5')
 
 # TensorFlow Lite converts full floating point to half-precision floats (float16).
 import tensorflow as tf
+converter = tf.lite.TFLiteConverter.from_keras_model(q_aware_model)
 optimize="Speed"
 if optimize=='Speed':
     converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
