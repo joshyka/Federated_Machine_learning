@@ -33,3 +33,18 @@ quantized_tflite_model = converter.convert()
 with open('Intel_QAT.tflite', 'wb') as f:
   f.write(quantized_tflite_model)
 
+# import tensorflow as tf
+# optimize="Speed"
+# if optimize=='Speed':
+#     converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
+# elif optimize=='Storage':
+#      converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
+# else:    
+#     converter.optimizations = [tf.lite.Optimize.DEFAULT]
+# #reduce the size of a floating point model by quantizing the weights to float16
+# converter.target_spec.supported_types = [tf.float16]
+# #save the quanitized model toa binary file
+# quantized_tflite_model = converter.convert()
+# with open('Intel_QAT.tflite16', 'wb') as f:
+#   f.write(quantized_tflite_model)
+
