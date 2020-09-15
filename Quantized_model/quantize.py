@@ -26,6 +26,7 @@ q_aware_model.summary()
 
 q_aware_model.save('Intel_quantize_aware_model.h5')
 
+# TensorFlow Lite converts full floating point to 8-bit integers
 import tensorflow as tf
 converter = tf.lite.TFLiteConverter.from_keras_model(q_aware_model)
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
@@ -33,6 +34,7 @@ quantized_tflite_model = converter.convert()
 with open('Intel_QAT.tflite', 'wb') as f:
   f.write(quantized_tflite_model)
 
+# TensorFlow Lite converts full floating point to half-precision floats (float16).
 # import tensorflow as tf
 # optimize="Speed"
 # if optimize=='Speed':
